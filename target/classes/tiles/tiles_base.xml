@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE tiles-definitions PUBLIC 
+	"-//Apache Software Foundation//DTD Tiles Configuration 2.0//EN" 
+	"http://tiles.apache.org/dtds/tiles-config_2_0.dtd">
+ 
+<tiles-definitions>
+ 
+	<definition name="basetest" template="/page/index.jsp">
+	</definition>
+	<!-- 
+	<definition name="base" template="/page/base.jsp">
+		<put-attribute name="aa" value=""></put-attribute>
+	</definition>
+	<body>
+		<tiles:insertAttribute="aa" />
+		<tiles:insertAttribute="bb" />
+		<tiles:insertAttribute="" />
+	</body>
+ -->
+</tiles-definitions>

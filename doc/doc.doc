@@ -1,0 +1,114 @@
+Hello Web Security
+在这个部分，我们对一个基于web的security作一些基本的配置。可以分成四个部分：
+?更新依赖 – 我们已经在前一篇文章中用Maven进行了示范
+?进行Spring Security配置 – 这个例子中，我们采用WebSecurityConfigurerAdapter
+?确保Spring Security配置已经被加载了 – 我们采用AbstractAnnotationConfigDispatcherServletInitializer
+?配置springSecurityFilterChain – 我们采用AbstractSecurityWebApplicationInitializer
+WebSecurityConfigurerAdapter
+@EnableWebSecurity注解以及WebSecurityConfigurerAdapter一起配合提供基于web的security。继承了WebSecurityConfigurerAdapter之后，再加上几行代码，我们就能实现以下的功能：
+?要求用户在进入你的应用的任何URL之前都进行验证
+?创建一个用户名是“user”，密码是“password”，角色是“ROLE_USER”的用户
+?启用HTTP Basic和基于表单的验证
+?Spring Security将会自动生成一个登陆页面和登出成功页面
+@Configuration@EnableWebSecuritypublic class HelloWebSecurityConfiguration extends WebSecurityConfigurerAdapter {@Overrideprotected void registerAuthentication(AuthenticationManagerBuilder auth) {
+auth.inMemoryAuthentication().withUser("user").password("password").roles("USER");}}
+作为参考，我们在这里也给出相似的XML配置，不过有几个特殊配置：
+?Spring Security会生成一个登陆页面，验证失败页面和登出成功页面
+?login-processing-url仅仅处理HTTP POST
+?login-page仅仅通过HTTP GET进入
+<http use-expressions="true">
+  <intercept-url pattern="/**" access="authenticated"/>
+  <logout
+    logout-success-url="/login?logout"
+    logout-url="/logout"
+  />
+  <form-login
+    authentication-failure-url="/login?error"
+    login-page="/login"
+    login-processing-url="/login"
+    password-parameter="password"
+    username-parameter="username"
+  /></http><authentication-manager>
+  <authentication-provider>
+    <user-service>
+      <user name="user"
+          password="password"
+          authorities="ROLE_USER"/>
+    </user-service>
+  </authentication-provider></authentication-manager>
+AbstractAnnotationConfigDispatcherServletInitializer
+下一步就是保证ApplicationContext包含我们刚刚定义的HelloWebSecurityConfiguration。有几种方法都可行，我们这里使用Spring的AbstractAnnotationConfigDispatcherServletInitializer：
+public class SpringWebMvcInitializer extendsAbstractAnnotationConfigDispatcherServletInitializer {@Overrideprotected Class[] getRootConfigClasses() {return new Class[] { HelloWebSecurityConfiguration.class };}...}
+Spring Security通常在web.xml中包含下面几行代码进行初始化：
+<!-- Creates the Spring Container shared by all Servlets and Filters --><listener>
+  <listener-class>
+    org.springframework.web.context.ContextLoaderListener
+  </listener-class></listener><!-- Load all Spring XML configuration including our security.xml file --><context-param>
+  <param-name>contextConfigLocation</param-name>
+  <param-value>/WEB-INF/spring/*.xml</param-value></context-param>
+AbstractSecurity WebApplicationInitializer
+最后一步，我们需要对springSecurityFilterChain定义映射路径。我们很容易通过继承AbstractSecurityWebApplicationInitializer实现，并可以有选择的通过覆盖方法来定制映射。
+下面是最基本的配置，它可以接受默认的映射路径，springSecurityFilterChain具有以下的特性：
+?springSecurityFilterChain映射到了”/*”
+?springSecurityFilterChain使用ERROR和REQUEST分派类型(dispatch type)
+?springSecurityFilterChain插入到其它已经配置的servlet过滤器映射(servlet Filter mapping)之前
+public class SecurityWebApplicationInitializerextends AbstractSecurityWebApplicationInitializer {}
+上面的代码等同于将这几行代码放在web.xml中：
+<filter>
+  <filter-name>springSecurityFilterChain</filter-name>
+  <filter-class>
+    org.springframework.web.filter.DelegatingFilterProxy
+  </filter-class></filter><filter-mapping>
+  <filter-name>springSecurityFilterChain</filter-name>
+  <url-pattern>/*</url-pattern>
+  <dispatcher>ERROR</dispatcher>
+  <dispatcher>REQUEST</dispatcher></filter-mapping>
+WebApplicationInitializer的次序
+在AbstractSecurityWebApplicationInitializer启动之后再加入的servlet过滤器映射，它们有可能会加在springSecurityFilterChain之前。除非这个应用不需要安全验证，否则springSecurityFilterChain需要放在其它所有的过滤器映射之前。@Order可以保证任何WebApplicationInitializer都使用特定的顺序加载。
+CustomWebSecurityConfigurerAdapter
+这个HelloWebSecurityConfiguration范例，为我们很好的展示了Spring Security Java配置是如何工作的。让我们来看看更多定制的配置吧。
+@EnableWebSecurity@Configurationpublic class CustomWebSecurityConfigurerAdapter extendsWebSecurityConfigurerAdapter {@Overrideprotected void registerAuthentication(AuthenticationManagerBuilder auth) {
+auth.inMemoryAuthentication().withUser("user") // #1.password("password").roles("USER").and().withUser("admin") // #2.password("password").roles("ADMIN","USER");}@Overridepublic void configure(WebSecurity web) throws Exception {
+web.ignoring().antMatchers("/resources/**"); // #3}@Overrideprotected void configure(HttpSecurity http) throws Exception {
+http.authorizeUrls().antMatchers("/signup","/about").permitAll() // #4.antMatchers("/admin/**").hasRole("ADMIN") // #6.anyRequest().authenticated() // #7.and().formLogin() // #8.loginUrl("/login") // #9.permitAll(); // #5}}
+我们也需要更新AbstractAnnotationConfigDispatcherServletInitializer，这样CustomWebSecurityConfigurerAdapter可以实现以下功能:
+?#1 可以在内存中的验证(memory authentication)叫作”user”的用户
+?#2 可以在内存中的验证(memory authentication)叫作”admin”的管理员用户
+?#3 忽略任何以”/resources/”开头的请求，这和在XML配置http@security=none的效果一样
+?#4 任何人(包括没有经过验证的)都可以访问”/signup”和”/about”
+?#5 任何人(包括没有经过验证的)都可以访问”/login”和”/login?error”。permitAll()是指用户可以访问formLogin()相关的任何URL。
+?#6 “/admin/”开头的URL必须要是管理员用户，譬如”admin”用户
+?#7 所有其他的URL都需要用户进行验证
+?#8 使用Java配置默认值设置了基于表单的验证。使用POST提交到”/login”时，需要用”username”和”password”进行验证。
+?#9 注明了登陆页面，意味着用GET访问”/login”时，显示登陆页面
+下面的XML配置和上面的Java配置类似：
+Java配置和XML命名空间的相同之处
+在看过了更复杂的例子之后，你可能已经找到了一些XML命名空间和Java配置的相似之处。我在这里说明几条有用的信息：
+?HttpSecurity和http命名空间类似。它可以对于某一部分请求进行特别配置。要看个完整的配置实例，详见SampleMultiHttpSecurityConfig
+?WebSecurity和Security的命名空间的元素很类似，后者是针对web的，不需要父节点(security=none, debug等等)。可以对整个web security进行配置。
+?WebSecurityConfigurerAdapter方便我们定制WebSecurity和HttpSecurity。我们可以对WebSecurityConfigurerAdapter进行多次继承，以实现不同的http行为。详细的实例参见SampleMultiHttpSecurityConfig
+?我们以上的Java配置代码作了代码格式化，所以易于阅读。“and()”类似于XML中结束一个元素的结束符。
+Java配置和XML命名空间的不同之处
+你已经意识到了XML和Java配置的不同之处
+?当你在”#1″和“#2”中创建用户的时候，我们并没有设置为”ROLE_“前缀，而我们在XML设置成了“ROLE_USER”。因为这是个管理，”roles()”方法会自动添加”ROLE_“。如果你不想要”ROLE_“，你可以使用”authoritites()”方法。
+?Java配置有一些不同的默认URL和参数。当要创建自定义的登陆页面的时候要将这一条牢记在心。默认的URL使我们的URL更加RESTful。另外，使用Spring Security可以帮我避免信息泄露)。例如：
+oGET访问/login登陆页面，而不是访问/spring_security_login
+oPOST访问/login，而不是/j_spring_security_check
+o用户名默认为parameter，而不是j_username
+o密码默认是password，而不是j_password
+?Java配置可以更容易将多个请求映射到同样的角色上。#4就将两个URL作了映射，以便所有人都可以访问
+?Java移除了多余的代码。例如，在XML中我们不得不在form-login和intercept-url中重复两次”/login”，而在Java配置中，我们靠#5就轻易做到了让用户都能访问到和formLogin()相关的URL。
+?#6映射HTTP请求的时候，我们使用了“hasRole()”方法，我们也没有添加”ROLE_”前缀，而在XML中我们则添加了。这也是我们应该知道的惯例:”hasRole()”会自动添加”ROLE_”前缀。如果你不想要“ROLE_”前缀，你可以使用”access()”方法。
+更多的示例
+我们还提供了更多的示例，你应该想跃跃欲试了吧：
+?HttpSecurity的Javadoc中有一些例子。查看方法的Javadoc有助你学习到不少东西，如openid,?remember me等。
+?入门教程
+?基于Web的示例
+?完整的Web应用
+从XML命名空间到Java配置
+如果你觉得从XML转变成Java配置有一定困难，你可以先看看这些测试。这些测试中，XML元素的名称以”Namespace”开头，中间是XML元素的名称，然后以”Tests”结尾。例如，你想学习如何将http元素转换成Java配置，你可以看看NamespaceHttpTests；你如果想学习如何将remember-me命名空间转换成Java配置，参见NamespaceRememberMeTests
+欢迎反馈
+如果你发现了bug，或者觉得有什么地方值得改进，请你不要犹豫，给我们留言！我们希望听到你的想法，以便在大部分人获得代码之前，我们便确保代码的正确性。很早的尝试新功能是一种简单有效的回馈社区的方法，这样做的好处就是能帮助你获得你希望获得的功能。
+请到“Java Config”目录下的Spring Security JIRA记录下任何问题。记录了一个JIRA之后，我们希望（当然并不是必须的）你在pull request中提交你的代码。你可以在贡献者指引中阅读更详细的步骤。如果你有任何不清楚的，请使用Spring Security论坛或者Stack Overflow，并使用”spring-security”标签(我会一直查看这个标签)。如果你针对这个博客有任何意见，也请留言。使用合适的工具对每个人来说都会带来便利。
+结论
+你可能已经对基于web的security的Java配置已经有了一定的认识了。下一篇中，我们将会带你来看下如何用Java配置来配置基于method的security。
