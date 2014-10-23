@@ -22,7 +22,7 @@ public class DispatcherServletInitializer extends
 	@Override
 	protected Class<?>[] getRootConfigClasses() {
 		
-		return new Class[]{MultiHttpSecurityConfig.class,ServiceConfig.class};
+		return new Class[]{MultiHttpSecurityConfig.class,ServiceConfig.class,DaoConfig.class};
 	}
 
 	@Override

@@ -15,7 +15,7 @@ import org.springframework.util.Assert;
  */
 public class Page<T> {
 
-	public static final int DEFAULT_PAGE_SIZE = 10; // 每页条数的默认值
+	private static final int DEFAULT_PAGE_SIZE = 10; // 每页条数的默认值
 
 	private int pageSize = DEFAULT_PAGE_SIZE; // 每页记录数
 
@@ -28,14 +28,11 @@ public class Page<T> {
 	/**
 	 * Constructor of {@code Page}.
 	 * 
-	 * @param start
-	 *            本页数据在数据库中的起始位置，从0开始。
-	 * @param pageSize
-	 *            the pageSize of the page to be returned.
-	 * @param data
-	 *            the data of this page
-	 * @param total
-	 *            the total amount of items available.
+	 * @param start 本页数据在数据库中的起始位置，从0开始。
+	 * @param pageSize the pageSize of the page to be returned.
+	 * @param data  the data of this page
+	 * @param total the total amount of items available.
+	 *            
 	 */
 	public Page(long start, int pageSize, List<T> data, long total) {
 		Assert.isTrue(

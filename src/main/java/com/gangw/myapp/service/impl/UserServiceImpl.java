@@ -1,6 +1,12 @@
 package com.gangw.myapp.service.impl;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.gangw.myapp.dao.UserDao;
+import com.gangw.myapp.dao.impl.UserDaoImpl;
 import com.gangw.myapp.exception.UserExistException;
+import com.gangw.myapp.model.dto.UserDTO;
 import com.gangw.myapp.model.vo.User;
 import com.gangw.myapp.service.UserService;
 /**
@@ -8,8 +14,17 @@ import com.gangw.myapp.service.UserService;
  * @author ggw
  *
  */
+@Service
 public class UserServiceImpl implements UserService{
 
+	@Autowired
+	private UserDao userDao;
+	
+	public User getUser(String username){
+		return userDao.loadUserByUsername(username);
+	}
+	
+	
 	@Override
 	public void register(User user) throws UserExistException {
 		

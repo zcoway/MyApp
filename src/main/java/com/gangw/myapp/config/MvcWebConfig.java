@@ -72,19 +72,19 @@ public class MvcWebConfig extends WebMvcConfigurerAdapter {
 	}
 
 	// --------------------start language resolver
-	@Bean(name = "cookieLocaleResolver")
+	@Bean(name = "localeResolver")
 	public LocaleResolver localeResolver() {
 
 		CookieLocaleResolver cookieLocaleResolver = new CookieLocaleResolver();
 		cookieLocaleResolver.setDefaultLocale(StringUtils
-				.parseLocaleString("en"));
+				.parseLocaleString("zh_CN"));
 		return cookieLocaleResolver;
 	}
 
-	@Bean(name = { "SessionLocaleResolver" })
-	public LocaleResolver getLocaleResolver() {
-		return new SessionLocaleResolver();
-	}
+//	@Bean(name = { "SessionLocaleResolver" })
+//	public LocaleResolver getLocaleResolver() {
+//		return new SessionLocaleResolver();
+//	}
 
 	// -----------------------end language resolver
 

@@ -1,6 +1,7 @@
 package com.gangw.myapp.service;
 
 import com.gangw.myapp.exception.UserExistException;
+import com.gangw.myapp.model.dto.UserDTO;
 import com.gangw.myapp.model.vo.User;
 
 public interface UserService {
@@ -10,5 +11,6 @@ public interface UserService {
 	 * @throws UserExistException 如果用户已存在，则抛出UserExistException异常
 	 */
 	void register(User user) throws UserExistException;
-
+	
+	User getUser(String username);
 }

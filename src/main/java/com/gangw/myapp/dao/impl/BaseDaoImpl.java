@@ -6,7 +6,7 @@ import java.lang.reflect.Type;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.orm.hibernate3.HibernateTemplate;
+import org.springframework.orm.hibernate4.HibernateTemplate;
 
 import com.gangw.myapp.dao.BaseDao;
 import com.gangw.myapp.dao.Page;
@@ -28,7 +28,6 @@ public class BaseDaoImpl<T> implements BaseDao<T>{
 		Type genType = getClass().getGenericSuperclass();
 		Type[] params = ((ParameterizedType) genType).getActualTypeArguments();
 		entity = (Class<T>) params[0];
-		System.out.println(entity);
 	}
 	
 	@Override
