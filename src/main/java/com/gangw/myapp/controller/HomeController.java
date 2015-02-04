@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.gangw.myapp.model.vo.MyEntity;
+import com.gangw.myapp.model.vo.User;
 import com.gangw.myapp.service.UserService;
 
 /**
@@ -36,16 +37,16 @@ public class HomeController {
 	}
 	
 	
-	@ModelAttribute("entity")
-	public MyEntity init(@PathVariable String id) {
-		return new MyEntity();
-	}
+//	@ModelAttribute("entity")
+//	public MyEntity init(@PathVariable String id) {
+//		return new MyEntity();
+//	}
 	
 	@RequestMapping(value="/api/{id}", method=RequestMethod.GET)
 	public ModelAndView view(ModelAndView mv, @ModelAttribute("entity") MyEntity entity,Locale locale) {
 		System.out.println(locale);
-//		User userDTO = userService.getUser("sopadmin");
-//		System.out.println(userDTO);
+		User userDTO = userService.getUser("sopadmin");
+		System.out.println(userDTO);
 		mv.addObject("entity", entity);
 		mv.setViewName("entity_detail");
 		logger.info("requesting /myentity");

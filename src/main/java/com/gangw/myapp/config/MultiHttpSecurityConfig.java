@@ -46,7 +46,7 @@ public class MultiHttpSecurityConfig {
 		@Override
 		protected void configure(HttpSecurity http) throws Exception {
 			http.authorizeRequests().anyRequest().authenticated().and()
-					.formLogin();
+					.formLogin().defaultSuccessUrl("/");
 		}
 	}
 

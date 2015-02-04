@@ -1,6 +1,10 @@
 package com.gangw.myapp.service.impl;
 
+import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.acls.model.MutableAclService;
 import org.springframework.stereotype.Service;
 
 import com.gangw.myapp.dao.UserDao;
@@ -15,11 +19,15 @@ import com.gangw.myapp.service.UserService;
  *
  */
 @Service
+@Transactional
 public class UserServiceImpl implements UserService{
 
 	@Autowired
 	private UserDao userDao;
+//	@Autowired
+//	private MutableAclService mutableAclService;
 	
+	@Transactional(value=TxType.REQUIRED)
 	public User getUser(String username){
 		return userDao.loadUserByUsername(username);
 	}

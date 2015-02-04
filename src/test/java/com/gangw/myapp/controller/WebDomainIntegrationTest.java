@@ -15,11 +15,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import com.gangw.myapp.config.MvcWebConfig;
+import com.gangw.myapp.config.MvcConfig;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
-@ContextConfiguration(classes = {MvcWebConfig.class})
+@ContextConfiguration(classes = {MvcConfig.class})
 public class WebDomainIntegrationTest {
 
 	private static final String STANDARD = "Yummy Noodles";

@@ -17,19 +17,24 @@ import com.gangw.myapp.model.vo.User;
 @Repository
 public class UserDaoImpl extends BaseDaoImpl<User> implements UserDao,BaseDao<User> {
 	
-	private static final String DEF_USER_BY_USERNAME_QUERY = "select email,password from common$user u where u.user_account = ?";
-	@Autowired
-	private LocalSessionFactoryBean localSessionFactoryBean;
+	private static final String DEF_USER_BY_USERNAME_QUERY = "select email,password from common$user u where u.user_account = :username";
+	
 	@Override
 	public User loadUserByUsername(final String username) {
-		return getHibernteTemplate().execute(new HibernateCallback<User>() {
-
-			@Override
-			public User doInHibernate(Session session)
-					throws HibernateException {
-				return (User) session.createSQLQuery(DEF_USER_BY_USERNAME_QUERY).setString(0, username).uniqueResult();
-			}
-		});
+		
+		
+		return getHibernteTemplate().load(User.class, -1);
+		
+		
+//		return getHibernteTemplate().execute(new HibernateCallback<User>() {
+//
+//			@Override
+//			public User doInHibernate(Session session)
+//					throws HibernateException {
+//				Object obj = session.createSQLQuery(DEF_USER_BY_USERNAME_QUERY).setString("username", username).uniqueResult();
+//				return (User) obj;
+//			}
+//		});
 //		
 //		List<UserDTO> users =  (List<UserDTO>) getHibernteTemplate().find(DEF_USER_BY_USERNAME_QUERY, username);
 //		if(users.size() == 0){

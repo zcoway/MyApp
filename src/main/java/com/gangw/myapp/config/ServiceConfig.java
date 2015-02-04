@@ -1,7 +1,9 @@
 package com.gangw.myapp.config;
 
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 @Configuration
+@ComponentScan(basePackages = { "com.gangw.myapp.service" })
 public class ServiceConfig {
 
 }
